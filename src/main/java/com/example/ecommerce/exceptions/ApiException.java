@@ -1,0 +1,7 @@
+package com.example.ecommerce.exceptions;
+
+public class ApiException extends RuntimeException{
+    public ApiException(String message) {
+        super(message);
+    }
+}
