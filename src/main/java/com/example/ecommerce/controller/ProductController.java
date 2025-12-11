@@ -23,6 +23,7 @@ public class ProductController {
     @Autowired
     public ProductController(ProductService productService, ModelMapper modelMapper) {
         this.productService = productService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping("/{id}")
@@ -33,6 +34,11 @@ public class ProductController {
     @PostMapping
     public Product addProduct(@RequestBody Product product) {
         return productService.save(product);
+    }
+
+    @PostMapping("/category/{categoryId}")
+    public ProductDTO addProductToCategory(@RequestBody Product product, @PathVariable long categoryId) {
+        return modelMapper.map(productService.addProductToCategory(product, categoryId), ProductDTO.class);
     }
 
     @GetMapping

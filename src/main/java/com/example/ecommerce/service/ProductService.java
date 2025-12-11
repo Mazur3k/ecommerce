@@ -12,4 +12,5 @@ public interface ProductService {
     void delete(Long id);
     Product update(Product product);
     Page<Product> findAll(int pageNumber, int pageSize, String sortOrder, String sortBy);
+    Product addProductToCategory(Product product, long categoryId);
 }

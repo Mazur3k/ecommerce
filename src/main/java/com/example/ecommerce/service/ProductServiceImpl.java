@@ -1,12 +1,15 @@
 package com.example.ecommerce.service;
 
+import com.example.ecommerce.model.Category;
 import com.example.ecommerce.model.Product;
+import com.example.ecommerce.repositories.CategoryRepository;
 import com.example.ecommerce.repositories.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +17,11 @@ import java.util.Optional;
 @Service
 public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
+    private CategoryRepository categoryRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -44,5 +49,13 @@ public class ProductServiceImpl implements ProductService {
         Sort sort = "asc".equals(sortOrder) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(pageNumer, pageSize, sort);
         return productRepository.findAll(pageable);
+    }
+
+    @Transactional
+    @Override
+    public Product addProductToCategory(Product product, long categoryId) {
+        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new RuntimeException("category with id " + categoryId + " not found"));
+        product.setCategory(category);
+        return productRepository.save(product);
     }
 }
