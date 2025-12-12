@@ -1,9 +1,11 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.constants.AppConstants;
+import com.example.ecommerce.exceptions.ResourceNotFoundException;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.payload.ProductDTO;
 import com.example.ecommerce.payload.ProductResponse;
+import com.example.ecommerce.service.CategoryService;
 import com.example.ecommerce.service.ProductService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +19,15 @@ import java.util.List;
 @RequestMapping("/api/public/products")
 public class ProductController {
 
+    private final CategoryService categoryService;
     private ProductService productService;
     private ModelMapper modelMapper;
 
     @Autowired
-    public ProductController(ProductService productService, ModelMapper modelMapper) {
+    public ProductController(ProductService productService, ModelMapper modelMapper, CategoryService categoryService) {
         this.productService = productService;
         this.modelMapper = modelMapper;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/{id}")
@@ -39,6 +43,15 @@ public class ProductController {
     @PostMapping("/category/{categoryId}")
     public ProductDTO addProductToCategory(@RequestBody Product product, @PathVariable long categoryId) {
         return modelMapper.map(productService.addProductToCategory(product, categoryId), ProductDTO.class);
+    }
+
+    @GetMapping("/category/{categoryName}")
+    public ResponseEntity<List<ProductDTO>> getProductByCategoryName(@PathVariable String categoryName) {
+        List<ProductDTO> productsDto = categoryService.findByName(categoryName)
+                .map(category -> category.getProducts().stream()
+                        .map(product -> modelMapper.map(product, ProductDTO.class)).toList())
+                .orElseThrow(() -> new ResourceNotFoundException("No such category"));
+        return ResponseEntity.ok(productsDto);
     }
 
     @GetMapping
