@@ -2,9 +2,12 @@ package com.example.ecommerce.controller;
 
 import com.example.ecommerce.constants.AppConstants;
 import com.example.ecommerce.model.Category;
+import com.example.ecommerce.model.Product;
 import com.example.ecommerce.payload.CategoryDTO;
 import com.example.ecommerce.payload.CategoryResponse;
+import com.example.ecommerce.payload.ProductDTO;
 import com.example.ecommerce.service.CategoryService;
+import com.example.ecommerce.service.ProductService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -16,16 +19,19 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/api/public/categories")
 public class CategoryController {
     private final CategoryService categoryService;
+    private final ProductService productService;
     private final ModelMapper mapper;
 
-    public CategoryController(CategoryService categoryService, ModelMapper mapper) {
+    public CategoryController(CategoryService categoryService, ProductService productService, ModelMapper mapper) {
         this.categoryService = categoryService;
+        this.productService = productService;
         this.mapper = mapper;
     }
 
-    @GetMapping("/api/public/categories")
+    @GetMapping
     public ResponseEntity<CategoryResponse> getCategories(@RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER) int pageNumber,
                                                           @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE) int pageSize,
                                                           @RequestParam(value = "sortOrder", defaultValue = AppConstants.SORT_ORDER_CATEGORIES) String sortOrder,
@@ -46,13 +52,13 @@ public class CategoryController {
         return ResponseEntity.ok(categoryResponse);
     }
 
-    @PostMapping("/api/public/categories")
+    @PostMapping
     public  ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDto){
         Category savedCategory = categoryService.save(mapper.map(categoryDto, Category.class));
         return new ResponseEntity<>(mapper.map(savedCategory, CategoryDTO.class), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/api/public/categories/{categoryId}")
+    @DeleteMapping("/{categoryId}")
     public ResponseEntity<CategoryDTO> deleteCategory(@PathVariable("categoryId") long id){
         return categoryService.deleteById(id)
                 .map(deleted -> mapper.map(deleted, CategoryDTO.class))
@@ -61,7 +67,7 @@ public class CategoryController {
 
     }
 
-    @PutMapping("/api/public/categories")
+    @PutMapping
     public ResponseEntity<CategoryDTO> updateCategory(@Valid @RequestBody CategoryDTO categoryDto){
         Category category = mapper.map(categoryDto, Category.class);
         Optional<Category> updated = categoryService.update(category);
@@ -70,11 +76,16 @@ public class CategoryController {
                 .orElse(ResponseEntity.badRequest().build());
     }
 
-    @GetMapping("/api/public/categories/{name}")
+    @GetMapping("/{name}")
     public ResponseEntity<Category> getCategoryByName(@PathVariable String name){
         return categoryService
                 .findByName(name)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/category/{categoryId}")
+    public ProductDTO addProductToCategory(@RequestBody Product product, @PathVariable long categoryId) {
+        return mapper.map(productService.addProductToCategory(product, categoryId), ProductDTO.class);
     }
 }

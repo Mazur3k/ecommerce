@@ -1,13 +1,11 @@
 package com.example.ecommerce.service;
 
+import com.example.ecommerce.exceptions.ResourceNotFoundException;
 import com.example.ecommerce.model.Category;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.repositories.CategoryRepository;
 import com.example.ecommerce.repositories.ProductRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,8 +52,18 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public Product addProductToCategory(Product product, long categoryId) {
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new RuntimeException("category with id " + categoryId + " not found"));
+        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("category with id " + categoryId + " not found"));
         product.setCategory(category);
         return productRepository.save(product);
+    }
+
+    @Transactional
+    @Override
+    public Page<Product> findProductsByCategory(String categoryName, int pageNumber, int pageSize, String sortOrder, String sortBy) {
+        Category categoryRep = categoryRepository.findByName(categoryName).orElseThrow(() -> new ResourceNotFoundException("category with name " + categoryName + " not found"));
+        Sort sort = "asc".equals(sortOrder) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable page = PageRequest.of(pageNumber,pageSize, sort);
+
+        return new PageImpl<>(categoryRep.getProducts(), page, pageSize);
     }
 }

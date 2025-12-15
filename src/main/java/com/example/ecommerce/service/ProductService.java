@@ -2,9 +2,6 @@ package com.example.ecommerce.service;
 
 import com.example.ecommerce.model.Product;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 public interface ProductService {
     Product findById(Long id);
@@ -13,4 +10,5 @@ public interface ProductService {
     Product update(Product product);
     Page<Product> findAll(int pageNumber, int pageSize, String sortOrder, String sortBy);
     Product addProductToCategory(Product product, long categoryId);
+    Page<Product> findProductsByCategory(String categoryName, int pageNumber, int pageSize, String sortOrder, String sortBy);
 }

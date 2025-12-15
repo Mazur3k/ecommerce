@@ -2,6 +2,7 @@ package com.example.ecommerce.controller;
 
 import com.example.ecommerce.constants.AppConstants;
 import com.example.ecommerce.exceptions.ResourceNotFoundException;
+import com.example.ecommerce.model.Category;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.payload.ProductDTO;
 import com.example.ecommerce.payload.ProductResponse;
@@ -40,20 +41,6 @@ public class ProductController {
         return productService.save(product);
     }
 
-    @PostMapping("/category/{categoryId}")
-    public ProductDTO addProductToCategory(@RequestBody Product product, @PathVariable long categoryId) {
-        return modelMapper.map(productService.addProductToCategory(product, categoryId), ProductDTO.class);
-    }
-
-    @GetMapping("/category/{categoryName}")
-    public ResponseEntity<List<ProductDTO>> getProductByCategoryName(@PathVariable String categoryName) {
-        List<ProductDTO> productsDto = categoryService.findByName(categoryName)
-                .map(category -> category.getProducts().stream()
-                        .map(product -> modelMapper.map(product, ProductDTO.class)).toList())
-                .orElseThrow(() -> new ResourceNotFoundException("No such category"));
-        return ResponseEntity.ok(productsDto);
-    }
-
     @GetMapping
     public ResponseEntity<ProductResponse> findAll(
             @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER) int pageNumber,
@@ -80,5 +67,21 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/category/{categoryName}")
+    public ResponseEntity<ProductResponse> getProductsByCategoryName(@PathVariable String categoryName, @RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam String sortOrder, @RequestParam String sortBy) {
+        Page<Product> productsPage = productService.findProductsByCategory(categoryName, pageNumber, pageSize, sortOrder, sortBy);
+
+        ProductResponse productResponse = ProductResponse.builder()
+                .content(productsPage.getContent().stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList())
+                .pageSize(productsPage.getSize())
+                .pageNumber(productsPage.getNumber())
+                .totalPages(productsPage.getTotalPages())
+                .totalElements(productsPage.getTotalElements())
+                .isLastPage(productsPage.isLast())
+                .build();
+
+        return ResponseEntity.ok(productResponse);
     }
 }
