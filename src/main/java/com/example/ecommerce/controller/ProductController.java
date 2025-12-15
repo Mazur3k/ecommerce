@@ -46,8 +46,7 @@ public class ProductController {
             @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER) int pageNumber,
             @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_SIZE) int pageSize,
             @RequestParam(value = "sortOrder", defaultValue = AppConstants.SORT_ORDER_PRODUCTS) String sortOrder,
-            @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_BY_PRODUCTS) String sortBy
-    ){
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_BY_PRODUCTS) String sortBy){
         Page<Product> allProducts = productService.findAll(pageNumber, pageSize, sortOrder, sortBy);
 
         List<ProductDTO> listProducts = allProducts.stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
@@ -88,5 +87,26 @@ public class ProductController {
     @PostMapping("/{productId}/category/{categoryId}")
     public ProductDTO addProductToCategory(@PathVariable long productId, @PathVariable long categoryId) {
         return modelMapper.map(productService.addCategoryToProduct(productId, categoryId), ProductDTO.class);
+    }
+
+    @GetMapping("/search/{keyword}")
+    public ResponseEntity<ProductResponse> getProductsByKeyword(
+            @PathVariable String keyword,
+            @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE) int pageSize,
+            @RequestParam(value = "sortOrder", defaultValue = AppConstants.SORT_ORDER_PRODUCTS) String sortOrder,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_BY_PRODUCTS) String sortBy) {
+        Page<Product> productsByKeyword = productService.findProductsByKeyword("%" + keyword + "%", pageNumber, pageSize, sortOrder, sortBy);
+
+        ProductResponse productResponse = ProductResponse.builder()
+                .content(productsByKeyword.getContent().stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList())
+                .pageNumber(productsByKeyword.getNumber())
+                .totalElements(productsByKeyword.getTotalElements())
+                .totalPages(productsByKeyword.getTotalPages())
+                .pageSize(productsByKeyword.getSize())
+                .isLastPage(productsByKeyword.isLast())
+                .build();
+
+        return ResponseEntity.ok(productResponse);
     }
 }

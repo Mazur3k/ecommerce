@@ -11,4 +11,5 @@ public interface ProductService {
     Page<Product> findAll(int pageNumber, int pageSize, String sortOrder, String sortBy);
     Product addCategoryToProduct(long productId, long categoryId);
     Page<Product> findProductsByCategory(String categoryName, int pageNumber, int pageSize, String sortOrder, String sortBy);
+    Page<Product> findProductsByKeyword(String keyword, int pageNumber, int pageSize, String sortOrder, String sortBy);
 }

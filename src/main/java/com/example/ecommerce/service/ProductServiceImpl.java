@@ -68,4 +68,11 @@ public class ProductServiceImpl implements ProductService {
 
         return new PageImpl<>(categoryRep.getProducts(), page, pageSize);
     }
+
+    @Override
+    public Page<Product> findProductsByKeyword(String keyword, int pageNumber, int pageSize, String sortOrder, String sortBy) {
+        Sort sort = "asc".equals(sortOrder) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(pageNumber,pageSize, sort);
+        return productRepository.findByNameLikeIgnoreCase(keyword, pageable);
+    }
 }
