@@ -2,10 +2,8 @@ package com.example.ecommerce.controller;
 
 import com.example.ecommerce.constants.AppConstants;
 import com.example.ecommerce.model.Category;
-import com.example.ecommerce.model.Product;
 import com.example.ecommerce.payload.CategoryDTO;
 import com.example.ecommerce.payload.CategoryResponse;
-import com.example.ecommerce.payload.ProductDTO;
 import com.example.ecommerce.service.CategoryService;
 import com.example.ecommerce.service.ProductService;
 import jakarta.validation.Valid;
@@ -23,12 +21,12 @@ import java.util.Optional;
 public class CategoryController {
     private final CategoryService categoryService;
     private final ProductService productService;
-    private final ModelMapper mapper;
+    private final ModelMapper modelMapper;
 
     public CategoryController(CategoryService categoryService, ProductService productService, ModelMapper mapper) {
         this.categoryService = categoryService;
         this.productService = productService;
-        this.mapper = mapper;
+        this.modelMapper = mapper;
     }
 
     @GetMapping
@@ -38,7 +36,7 @@ public class CategoryController {
                                                           @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_BY_CATEGORIES) String sortBy) {
         Page<Category> pageCategory = categoryService.getAll(pageNumber, pageSize, sortOrder, sortBy);
         List<CategoryDTO> allCategories = pageCategory.stream()
-                .map(category -> mapper.map(category, CategoryDTO.class)).toList();
+                .map(category -> modelMapper.map(category, CategoryDTO.class)).toList();
 
         CategoryResponse categoryResponse = CategoryResponse.builder()
                 .content(allCategories)
@@ -54,14 +52,14 @@ public class CategoryController {
 
     @PostMapping
     public  ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDto){
-        Category savedCategory = categoryService.save(mapper.map(categoryDto, Category.class));
-        return new ResponseEntity<>(mapper.map(savedCategory, CategoryDTO.class), HttpStatus.CREATED);
+        Category savedCategory = categoryService.save(modelMapper.map(categoryDto, Category.class));
+        return new ResponseEntity<>(modelMapper.map(savedCategory, CategoryDTO.class), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<CategoryDTO> deleteCategory(@PathVariable("categoryId") long id){
         return categoryService.deleteById(id)
-                .map(deleted -> mapper.map(deleted, CategoryDTO.class))
+                .map(deleted -> modelMapper.map(deleted, CategoryDTO.class))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.badRequest().build());
 
@@ -69,9 +67,9 @@ public class CategoryController {
 
     @PutMapping
     public ResponseEntity<CategoryDTO> updateCategory(@Valid @RequestBody CategoryDTO categoryDto){
-        Category category = mapper.map(categoryDto, Category.class);
+        Category category = modelMapper.map(categoryDto, Category.class);
         Optional<Category> updated = categoryService.update(category);
-        return updated.map(cat -> mapper.map(cat, CategoryDTO.class))
+        return updated.map(cat -> modelMapper.map(cat, CategoryDTO.class))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.badRequest().build());
     }
@@ -82,10 +80,5 @@ public class CategoryController {
                 .findByName(name)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/category/{categoryId}")
-    public ProductDTO addProductToCategory(@RequestBody Product product, @PathVariable long categoryId) {
-        return mapper.map(productService.addProductToCategory(product, categoryId), ProductDTO.class);
     }
 }

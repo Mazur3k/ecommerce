@@ -24,7 +24,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product findById(Long id) {
-        return productRepository.findById(id).orElseThrow(() -> new RuntimeException("product with id " + id + "not found"));
+        return productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("product with id " + id + " not found"));
     }
 
     @Override
@@ -51,10 +51,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     @Override
-    public Product addProductToCategory(Product product, long categoryId) {
+    public Product addCategoryToProduct(long productId, long categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("category with id " + categoryId + " not found"));
-        product.setCategory(category);
-        return productRepository.save(product);
+        Product prodById = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("product with id " + productId + " not found"));
+
+        prodById.setCategory(category);
+        return productRepository.save(prodById);
     }
 
     @Transactional

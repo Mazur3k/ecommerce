@@ -84,4 +84,9 @@ public class ProductController {
 
         return ResponseEntity.ok(productResponse);
     }
+
+    @PostMapping("/{productId}/category/{categoryId}")
+    public ProductDTO addProductToCategory(@PathVariable long productId, @PathVariable long categoryId) {
+        return modelMapper.map(productService.addCategoryToProduct(productId, categoryId), ProductDTO.class);
+    }
 }
