@@ -18,7 +18,6 @@ import java.util.List;
 @RequestMapping("/api")
 public class ProductController {
 
-    private final CategoryService categoryService;
     private ProductService productService;
     private ModelMapper modelMapper;
 
@@ -26,7 +25,6 @@ public class ProductController {
     public ProductController(ProductService productService, ModelMapper modelMapper, CategoryService categoryService) {
         this.productService = productService;
         this.modelMapper = modelMapper;
-        this.categoryService = categoryService;
     }
 
     @GetMapping("/public/products/{id}")
@@ -35,8 +33,8 @@ public class ProductController {
     }
 
     @PostMapping("/public/products")
-    public Product addProduct(@RequestBody Product product) {
-        return productService.save(product);
+    public Product addProduct(@RequestBody ProductDTO productDto) {
+        return productService.save(modelMapper.map(productDto,  Product.class));
     }
 
     @GetMapping("/public/products")
@@ -109,7 +107,7 @@ public class ProductController {
     }
 
     @PutMapping("/admin/products")
-    public ProductDTO updateProduct(@RequestBody Product product) {
-        return modelMapper.map(productService.update(product), ProductDTO.class);
+    public ProductDTO updateProduct(@RequestBody ProductDTO productDto) {
+        return modelMapper.map(productService.update(modelMapper.map(productDto, Product.class)), ProductDTO.class);
     }
 }
