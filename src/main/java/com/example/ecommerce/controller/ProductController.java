@@ -1,8 +1,6 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.constants.AppConstants;
-import com.example.ecommerce.exceptions.ResourceNotFoundException;
-import com.example.ecommerce.model.Category;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.payload.ProductDTO;
 import com.example.ecommerce.payload.ProductResponse;
@@ -17,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/public/products")
+@RequestMapping("/api")
 public class ProductController {
 
     private final CategoryService categoryService;
@@ -31,17 +29,17 @@ public class ProductController {
         this.categoryService = categoryService;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/public/products/{id}")
     public ResponseEntity<Product> findById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.findById(id));
     }
 
-    @PostMapping
+    @PostMapping("/public/products")
     public Product addProduct(@RequestBody Product product) {
         return productService.save(product);
     }
 
-    @GetMapping
+    @GetMapping("/public/products")
     public ResponseEntity<ProductResponse> findAll(
             @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER) int pageNumber,
             @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_SIZE) int pageSize,
@@ -62,13 +60,13 @@ public class ProductController {
         return ResponseEntity.ok(productResponse);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/public/products/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/category/{categoryName}")
+    @GetMapping("/public/products/category/{categoryName}")
     public ResponseEntity<ProductResponse> getProductsByCategoryName(@PathVariable String categoryName, @RequestParam int pageNumber, @RequestParam int pageSize, @RequestParam String sortOrder, @RequestParam String sortBy) {
         Page<Product> productsPage = productService.findProductsByCategory(categoryName, pageNumber, pageSize, sortOrder, sortBy);
 
@@ -84,12 +82,12 @@ public class ProductController {
         return ResponseEntity.ok(productResponse);
     }
 
-    @PostMapping("/{productId}/category/{categoryId}")
-    public ProductDTO addProductToCategory(@PathVariable long productId, @PathVariable long categoryId) {
+    @PostMapping("/public/products/{productId}/category/{categoryId}")
+    public ProductDTO addCategoryToProduct(@PathVariable long productId, @PathVariable long categoryId) {
         return modelMapper.map(productService.addCategoryToProduct(productId, categoryId), ProductDTO.class);
     }
 
-    @GetMapping("/search/{keyword}")
+    @GetMapping("/public/products/search/{keyword}")
     public ResponseEntity<ProductResponse> getProductsByKeyword(
             @PathVariable String keyword,
             @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER) int pageNumber,
@@ -108,5 +106,10 @@ public class ProductController {
                 .build();
 
         return ResponseEntity.ok(productResponse);
+    }
+
+    @PutMapping("/admin/products")
+    public ProductDTO updateProduct(@RequestBody Product product) {
+        return modelMapper.map(productService.update(product), ProductDTO.class);
     }
 }

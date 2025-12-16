@@ -37,9 +37,13 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(id);
     }
 
+    @Transactional
     @Override
     public Product update(Product product) {
-        return productRepository.save(product);
+        return productRepository
+                .findById(product.getId())
+                .map(_ -> productRepository.save(product))
+                .orElseThrow(() -> new ResourceNotFoundException("product with id " + product.getId() + " not found"));
     }
 
     @Override
