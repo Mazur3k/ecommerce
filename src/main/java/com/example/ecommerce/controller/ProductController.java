@@ -60,7 +60,7 @@ public class ProductController {
         return ResponseEntity.ok(productResponse);
     }
 
-    @DeleteMapping("/public/products/{id}")
+    @DeleteMapping("/admin/products/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.noContent().build();
