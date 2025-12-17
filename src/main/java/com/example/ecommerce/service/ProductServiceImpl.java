@@ -5,21 +5,27 @@ import com.example.ecommerce.model.Category;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.repositories.CategoryRepository;
 import com.example.ecommerce.repositories.ProductRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements ProductService {
+
     private ProductRepository productRepository;
     private CategoryRepository categoryRepository;
+    private FileStorageService fileStorageService;
 
-    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository, FileStorageService fileStorageService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -78,5 +84,17 @@ public class ProductServiceImpl implements ProductService {
         Sort sort = "asc".equals(sortOrder) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(pageNumber,pageSize, sort);
         return productRepository.findByNameLikeIgnoreCase(keyword, pageable);
+    }
+
+    @Transactional
+    @Override
+    public Product updateProductImage(long productId, MultipartFile image) throws IOException {
+        Optional<Product> productById = productRepository.findById(productId);
+
+        Product product = productById.orElseThrow(() -> new ResourceNotFoundException("product with id " + productId + " not found"));
+        String fileName = fileStorageService.uploadFile(image);
+        product.setImage(fileName);
+
+        return productRepository.save(product);
     }
 }

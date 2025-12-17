@@ -9,9 +9,12 @@ import com.example.ecommerce.service.ProductService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -33,8 +36,8 @@ public class ProductController {
     }
 
     @PostMapping("/public/products")
-    public Product addProduct(@RequestBody ProductDTO productDto) {
-        return productService.save(modelMapper.map(productDto,  Product.class));
+    public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO productDto) {
+        return ResponseEntity.ok(modelMapper.map(productService.save(modelMapper.map(productDto,  Product.class)), ProductDTO.class));
     }
 
     @GetMapping("/public/products")
@@ -81,8 +84,8 @@ public class ProductController {
     }
 
     @PostMapping("/public/products/{productId}/category/{categoryId}")
-    public ProductDTO addCategoryToProduct(@PathVariable long productId, @PathVariable long categoryId) {
-        return modelMapper.map(productService.addCategoryToProduct(productId, categoryId), ProductDTO.class);
+    public ResponseEntity<ProductDTO> addCategoryToProduct(@PathVariable long productId, @PathVariable long categoryId) {
+        return ResponseEntity.ok(modelMapper.map(productService.addCategoryToProduct(productId, categoryId), ProductDTO.class));
     }
 
     @GetMapping("/public/products/search/{keyword}")
@@ -107,7 +110,15 @@ public class ProductController {
     }
 
     @PutMapping("/admin/products")
-    public ProductDTO updateProduct(@RequestBody ProductDTO productDto) {
-        return modelMapper.map(productService.update(modelMapper.map(productDto, Product.class)), ProductDTO.class);
+    public ResponseEntity<ProductDTO> updateProduct(@RequestBody ProductDTO productDto) {
+        return ResponseEntity.ok(modelMapper.map(productService.update(modelMapper.map(productDto, Product.class)), ProductDTO.class));
+    }
+
+    @PutMapping(
+        value = "/admin/products/{productId}/image",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<ProductDTO> updateProductImage(@PathVariable long productId, @RequestParam("image") MultipartFile image) throws IOException {
+        return ResponseEntity.ok(modelMapper.map(productService.updateProductImage(productId, image), ProductDTO.class));
     }
 }
