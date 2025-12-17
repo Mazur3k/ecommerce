@@ -18,6 +18,9 @@ import java.util.Optional;
 @Service
 public class ProductServiceImpl implements ProductService {
 
+    @Value("${app.images.dir}")
+    private String imageDir;
+
     private ProductRepository productRepository;
     private CategoryRepository categoryRepository;
     private FileStorageService fileStorageService;
@@ -92,7 +95,7 @@ public class ProductServiceImpl implements ProductService {
         Optional<Product> productById = productRepository.findById(productId);
 
         Product product = productById.orElseThrow(() -> new ResourceNotFoundException("product with id " + productId + " not found"));
-        String fileName = fileStorageService.uploadFile(image);
+        String fileName = fileStorageService.uploadFile(imageDir, image);
         product.setImage(fileName);
 
         return productRepository.save(product);

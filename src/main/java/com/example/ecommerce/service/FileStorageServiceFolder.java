@@ -12,17 +12,15 @@ import java.util.UUID;
 
 @Service
 public class FileStorageServiceFolder implements FileStorageService {
-    @Value("${app.images.dir}")
-    private String uploadDir;
 
     @Override
-    public String uploadFile(MultipartFile file) throws IOException {
+    public String uploadFile(String path, MultipartFile file) throws IOException {
         String uuid = UUID.randomUUID().toString();
         String newFileName = String.format("%s_%s", uuid, file.getOriginalFilename());
 
-        String newPath = uploadDir + File.separator + newFileName;
+        String newPath = path + File.separator + newFileName;
 
-        File folder = new File(uploadDir);
+        File folder = new File(path);
         if(!folder.exists()){
             folder.mkdir();
         }
