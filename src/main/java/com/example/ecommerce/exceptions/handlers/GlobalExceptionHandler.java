@@ -1,5 +1,6 @@
 package com.example.ecommerce.exceptions.handlers;
 
+import com.example.ecommerce.exceptions.AlreadyExists;
 import com.example.ecommerce.exceptions.ResourceNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +32,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<String> constraintViolation(DataIntegrityViolationException exception){
         return ResponseEntity.badRequest().body("Constraint violated");
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> alreadyExists(AlreadyExists exception){
+        return ResponseEntity.badRequest().body(exception.getMessage());
     }
 }

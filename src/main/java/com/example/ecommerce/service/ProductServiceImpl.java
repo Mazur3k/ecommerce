@@ -68,6 +68,10 @@ public class ProductServiceImpl implements ProductService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("category with id " + categoryId + " not found"));
         Product prodById = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("product with id " + productId + " not found"));
 
+        if(prodById.getCategory().getId() == category.getId()){
+            return prodById;
+        }
+
         prodById.setCategory(category);
         return productRepository.save(prodById);
     }
@@ -99,5 +103,10 @@ public class ProductServiceImpl implements ProductService {
         product.setImage(fileName);
 
         return productRepository.save(product);
+    }
+
+    @Override
+    public boolean exists(long productId) {
+        return productRepository.existsById(productId);
     }
 }

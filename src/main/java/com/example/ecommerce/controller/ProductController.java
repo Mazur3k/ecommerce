@@ -1,11 +1,14 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.constants.AppConstants;
+import com.example.ecommerce.exceptions.AlreadyExists;
+import com.example.ecommerce.model.Category;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.payload.ProductDTO;
 import com.example.ecommerce.payload.ProductResponse;
 import com.example.ecommerce.service.CategoryService;
 import com.example.ecommerce.service.ProductService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,6 +24,7 @@ import java.util.List;
 @RequestMapping("/api")
 public class ProductController {
 
+    private final CategoryService categoryService;
     private ProductService productService;
     private ModelMapper modelMapper;
 
@@ -28,6 +32,7 @@ public class ProductController {
     public ProductController(ProductService productService, ModelMapper modelMapper, CategoryService categoryService) {
         this.productService = productService;
         this.modelMapper = modelMapper;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/public/products/{id}")
@@ -36,7 +41,11 @@ public class ProductController {
     }
 
     @PostMapping("/public/products")
-    public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO productDto) {
+    public ResponseEntity<ProductDTO> addProduct(@RequestBody @Valid ProductDTO productDto) {
+        if(productService.exists(productDto.getId())){
+            throw new AlreadyExists(String.format("Product with id %d already exists", productDto.getId()));
+        }
+
         return ResponseEntity.ok(modelMapper.map(productService.save(modelMapper.map(productDto,  Product.class)), ProductDTO.class));
     }
 
@@ -85,6 +94,9 @@ public class ProductController {
 
     @PostMapping("/public/products/{productId}/category/{categoryId}")
     public ResponseEntity<ProductDTO> addCategoryToProduct(@PathVariable long productId, @PathVariable long categoryId) {
+        Category category = categoryService.findById(categoryId);
+
+
         return ResponseEntity.ok(modelMapper.map(productService.addCategoryToProduct(productId, categoryId), ProductDTO.class));
     }
 
@@ -110,7 +122,7 @@ public class ProductController {
     }
 
     @PutMapping("/admin/products")
-    public ResponseEntity<ProductDTO> updateProduct(@RequestBody ProductDTO productDto) {
+    public ResponseEntity<ProductDTO> updateProduct(@RequestBody @Valid ProductDTO productDto) {
         return ResponseEntity.ok(modelMapper.map(productService.update(modelMapper.map(productDto, Product.class)), ProductDTO.class));
     }
 

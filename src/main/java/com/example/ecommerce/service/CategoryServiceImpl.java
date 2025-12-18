@@ -1,5 +1,6 @@
 package com.example.ecommerce.service;
 
+import com.example.ecommerce.exceptions.ResourceNotFoundException;
 import com.example.ecommerce.model.Category;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.repositories.CategoryRepository;
@@ -18,8 +19,6 @@ import java.util.Optional;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
-    private List<Category> categories = new ArrayList<>();
-
     private CategoryRepository categoryRepository;
 
     public CategoryServiceImpl(CategoryRepository categoryRepository) {
@@ -54,27 +53,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     @Override
-    public Optional<Category> update(Category category) {
-//        Category oldCategory = categories.stream().filter(cat -> cat.getCategoryId() == category.getCategoryId()).findAny()
-//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-//
-//        oldCategory.setCategoryId(category.getCategoryId());
-//        oldCategory.setCategoryName(category.getCategoryName());
-
-        Optional<Category> toBeUpdatedCategory = categoryRepository.findById(category.getId());
-        Optional<Category> updatedCategory = toBeUpdatedCategory.map(c -> {
-            c.setId(category.getId());
-            c.setName(category.getName());
-            return c;
-        });
-
-        updatedCategory.ifPresent(updatedCat -> categoryRepository.save(updatedCat));
-
-        return updatedCategory;
+    public Category update(Category category) {
+        Category toUpdateCategory = categoryRepository.findById(category.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Category with %d not found", category.getId())));
+        return categoryRepository.save(toUpdateCategory);
     }
 
     @Override
     public Optional<Category> findByName(String name) {
         return categoryRepository.findByName(name);
+    }
+
+    @Override
+    public Category findById(long id) {
+        return categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("Category with id %d not found", id)));
     }
 }

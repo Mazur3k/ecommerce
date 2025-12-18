@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/public/categories")
@@ -62,16 +61,13 @@ public class CategoryController {
                 .map(deleted -> modelMapper.map(deleted, CategoryDTO.class))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.badRequest().build());
-
     }
 
     @PutMapping
     public ResponseEntity<CategoryDTO> updateCategory(@Valid @RequestBody CategoryDTO categoryDto){
         Category category = modelMapper.map(categoryDto, Category.class);
-        Optional<Category> updated = categoryService.update(category);
-        return updated.map(cat -> modelMapper.map(cat, CategoryDTO.class))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.badRequest().build());
+        Category updated = categoryService.update(category);
+        return ResponseEntity.ok(modelMapper.map(updated, CategoryDTO.class));
     }
 
     @GetMapping("/{name}")

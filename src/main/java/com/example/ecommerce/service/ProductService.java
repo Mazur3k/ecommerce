@@ -16,4 +16,5 @@ public interface ProductService {
     Page<Product> findProductsByCategory(String categoryName, int pageNumber, int pageSize, String sortOrder, String sortBy);
     Page<Product> findProductsByKeyword(String keyword, int pageNumber, int pageSize, String sortOrder, String sortBy);
     Product updateProductImage(long productId, MultipartFile imageUrl) throws IOException;
+    boolean exists(long productId);
 }

@@ -13,6 +13,7 @@ public interface CategoryService {
     Optional<Category> getById(long id);
     Category save(Category category);
     Optional<Category> deleteById(long id);
-    Optional<Category> update(Category category);
+    Category update(Category category);
     Optional<Category> findByName(String name);
+    Category findById(long id);
 }
